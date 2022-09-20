@@ -144,13 +144,13 @@ function DrawScreen() {
       rayX += stepX;
       rayY += stepY;
 
+      distance += RAY_STEP;
+
       // check if ray is inside map
       if (rayX < 0 || rayX >= 256 || rayY < 0 || rayY >= 256) {
         wallFound = true;
         distance = MAX_DISTANCE;
       } else {
-        distance += RAY_STEP;
-
         // check if map cell is a wall
         if (map[Math.floor(rayY / 16)][Math.floor(rayX / 16)] != 0) {
           wallFound = true;
@@ -168,12 +168,9 @@ function DrawScreen() {
 
     // Draw column on screen, based on distance
     cs.beginPath();
-    cs.strokeStyle = columnColor; // '#ff8080';
+    cs.strokeStyle = columnColor;
     cs.strokeRect(col, 192 / 2 - columnHeight / 2, 1, columnHeight);
-    //cs.strokeRect(col, 10, 1, 100); //columnHeight);
     cs.closePath();
-
-    //console.log(col);
 
     angle += FOV / SCREEN_COLS;
   }
