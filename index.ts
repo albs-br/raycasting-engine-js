@@ -111,10 +111,27 @@ function DrawScreen() {
 
   let angle = p.getAngle() - FOV / 2;
 
+  // Clear screen and draw ceilng/floor
+  cs.clearRect(0, 0, objCanvasScr.width, objCanvasScr.height);
+  cs.strokeRect(0, 0, 256, 192);
+
+  var grd = cs.createLinearGradient(0, 96, 0, 192);
+  grd.addColorStop(0, 'red');
+  grd.addColorStop(1, 'white');
+  cs.fillStyle = grd;
+  cs.fillRect(0, 96, 256, 192);
+
+  var grd = cs.createLinearGradient(0, 0, 0, 96);
+  grd.addColorStop(0, 'white');
+  grd.addColorStop(1, 'blue');
+  cs.fillStyle = grd;
+  cs.fillRect(0, 0, 256, 96);
+
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
     // cast ray from player until find a wall
     const RAY_STEP = 1;
+    const MAX_DISTANCE = 256;
     let wallFound: boolean = false;
     let distance = 0;
     let rayX = p.X;
@@ -123,33 +140,37 @@ function DrawScreen() {
     let stepX = RAY_STEP * Math.cos((angle * Math.PI) / 180);
     let stepY = RAY_STEP * Math.sin((angle * Math.PI) / 180);
 
-    while (!wallFound && distance < 256) {
+    while (!wallFound && distance < MAX_DISTANCE) {
       rayX += stepX;
       rayY += stepY;
 
       // check if ray is inside map
       if (rayX < 0 || rayX >= 256 || rayY < 0 || rayY >= 256) {
         wallFound = true;
-      }
+        distance = MAX_DISTANCE;
+      } else {
+        distance += RAY_STEP;
 
-      distance += RAY_STEP;
-
-      // check if map cell is a wall
-      if (map[Math.floor(rayY / 16)][Math.floor(rayX / 16)] != 0) {
-        wallFound = true;
+        // check if map cell is a wall
+        if (map[Math.floor(rayY / 16)][Math.floor(rayX / 16)] != 0) {
+          wallFound = true;
+        }
       }
     }
 
-    let columnHeight = 192 - (distance / 256) * 192;
+    let columnHeight = 192 - (distance / MAX_DISTANCE) * 192;
+
+    let columnColor =
+      '#' +
+      (256 - distance).toString(16) +
+      (256 - distance).toString(16) +
+      (256 - distance).toString(16);
 
     // Draw column on screen, based on distance
-    cs.clearRect(0, 0, objCanvasScr.width, objCanvasScr.height);
-    cs.strokeRect(0, 0, 256, 192);
-
     cs.beginPath();
-    cs.strokeStyle = 'gray';
-    //cs.strokeRect(col, 192 / 2 - columnHeight / 2, 1, columnHeight);
-    cs.strokeRect(col, 10, 2, 10); //columnHeight);
+    cs.strokeStyle = columnColor; // '#ff8080';
+    cs.strokeRect(col, 192 / 2 - columnHeight / 2, 1, columnHeight);
+    //cs.strokeRect(col, 10, 1, 100); //columnHeight);
     cs.closePath();
 
     //console.log(col);
