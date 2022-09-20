@@ -9,11 +9,6 @@ let c = objCanvasMap.getContext('2d');
 //c.lineTo(255, 191);
 //c.stroke();
 
-c.strokeRect(0, 0, 256, 256);
-
-c.strokeRect(16, 32, 16, 16);
-c.strokeRect(16, 16, 16, 16);
-
 let p = new Player();
 p.c = c;
 p.X = 128;
@@ -21,8 +16,19 @@ p.Y = 128;
 p.Angle = 15;
 
 window.setInterval(function () {
-  //console.info('dd');
+  // Draw map
   c.clearRect(0, 0, objCanvasMap.width, objCanvasMap.height);
+  c.strokeRect(0, 0, 256, 256);
+
+  for (let y = 0; y < 16; y++) {
+    for (let x = 0; x < 16; x++) {
+      c.beginPath();
+      c.strokeStyle = 'lightgray';
+      c.strokeRect(x * 16, y * 16, 16, 16);
+      c.closePath();
+    }
+  }
+  //c.strokeRect(16, 16, 16, 16);
 
   //let s = `{p.X}, {p.Y}, {p.Angle}`;
   let s2 = 'x: ' + p.X + ', y: ' + p.Y + ', a: ' + p.Angle;
