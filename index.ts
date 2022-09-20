@@ -13,14 +13,14 @@ let p = new Player();
 p.c = c;
 p.X = 128;
 p.Y = 128;
-p.Angle = 20;
+p.Angle = 90;
 
 const map: number[] = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -29,7 +29,7 @@ const map: number[] = [
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
 ];
@@ -45,7 +45,7 @@ window.setInterval(function () {
   document.getElementById('debuginfo').innerHTML = s2;
 
   p.Draw();
-}, 16); // 60fps
+}, 33); // 30fps
 
 // Handle keyboard input
 document.getElementsByTagName('body')[0].onkeydown = function (e) {
@@ -70,17 +70,36 @@ document.getElementsByTagName('body')[0].onkeydown = function (e) {
   }
 
   if (ev.key == 'ArrowUp') {
-    p.X = p.X + STEP_SIZE * Math.cos((a * Math.PI) / 180);
+    let newX = p.X + STEP_SIZE * Math.cos((a * Math.PI) / 180);
+    let newY = p.Y + STEP_SIZE * Math.sin((a * Math.PI) / 180);
 
-    // cap X to 8.8 fixed point precision
-    //p.X = Math.round((p.X / 256) * 256);
+    if (PositionIsValid(newX, newY)) {
+      // cap X to 8.8 fixed point precision
+      //p.X = Math.round((p.X / 256) * 256);
 
-    p.Y = p.Y + STEP_SIZE * Math.sin((a * Math.PI) / 180);
+      p.X = newX;
+      p.Y = newY;
+    }
   } else if (ev.key == 'ArrowDown') {
-    p.X = p.X - STEP_SIZE * Math.cos((a * Math.PI) / 180);
-    p.Y = p.Y - STEP_SIZE * Math.sin((a * Math.PI) / 180);
+    let newX = p.X - STEP_SIZE * Math.cos((a * Math.PI) / 180);
+    let newY = p.Y - STEP_SIZE * Math.sin((a * Math.PI) / 180);
+
+    if (PositionIsValid(newX, newY)) {
+      p.X = newX;
+      p.Y = newY;
+    }
   }
 };
+
+function PositionIsValid(x, y) {
+  return (
+    x >= 0 &&
+    x < 256 &&
+    y >= 0 &&
+    y < 256 &&
+    map[Math.floor(y / 16)][Math.floor(x / 16)] == 0
+  );
+}
 
 // let degrees = 180;
 // let radians = (degrees * Math.PI) / 180;
@@ -108,7 +127,9 @@ function DrawMap() {
 function DrawScreen() {
   const FOV = 60; // field of view
   const SCREEN_COLS = 256;
+  //const SCREEN_COLS = 64;
 
+  // set initial angle
   let angle = p.getAngle() - FOV / 2;
 
   // Clear screen and draw ceilng/floor
@@ -130,7 +151,7 @@ function DrawScreen() {
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
     // cast ray from player until find a wall
-    const RAY_STEP = 1;
+    const RAY_STEP = 1; //256 / SCREEN_COLS;
     const MAX_DISTANCE = 256;
     let wallFound: boolean = false;
     let distance = 0;
@@ -158,18 +179,41 @@ function DrawScreen() {
       }
     }
 
-    let columnHeight = 192 - (distance / MAX_DISTANCE) * 192;
+    // test
+    if (distance > 255) distance = 255;
+    if (distance < 0) distance = 0;
+
+    let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
+
+    // test
+    if (z > 256) z = 256;
+    if (z < 0) z = 0;
+
+    let columnHeight = 192 - (z / 256) * 192;
+    //let columnHeight = 192 * (192 / z);
 
     let columnColor =
-      '#' +
-      (256 - distance).toString(16) +
-      (256 - distance).toString(16) +
-      (256 - distance).toString(16);
+      'rgb(' +
+      (255 - distance) +
+      ', ' +
+      (255 - distance) +
+      ', ' +
+      (255 - distance) +
+      ')';
+    // '#' +
+    //   (255 - distance).toString(16) +
+    //   (255 - distance).toString(16) +
+    //   (255 - distance).toString(16);
 
     // Draw column on screen, based on distance
     cs.beginPath();
     cs.strokeStyle = columnColor;
-    cs.strokeRect(col, 192 / 2 - columnHeight / 2, 1, columnHeight);
+    cs.strokeRect(
+      col * (256 / SCREEN_COLS),
+      192 / 2 - columnHeight / 2,
+      256 / SCREEN_COLS,
+      columnHeight
+    );
     cs.closePath();
 
     angle += FOV / SCREEN_COLS;
