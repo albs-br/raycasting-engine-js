@@ -151,7 +151,7 @@ function DrawScreen() {
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
     // cast ray from player until find a wall
-    const RAY_STEP = 1; //256 / SCREEN_COLS;
+    const RAY_STEP = 256 / SCREEN_COLS;
     const MAX_DISTANCE = 256;
     let wallFound: boolean = false;
     let distance = 0;
@@ -180,14 +180,14 @@ function DrawScreen() {
     }
 
     // test
-    if (distance > 255) distance = 255;
-    if (distance < 0) distance = 0;
+    // if (distance > 255) distance = 255;
+    // if (distance < 0) distance = 0;
 
     let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
 
     // test
-    if (z > 256) z = 256;
-    if (z < 0) z = 0;
+    // if (z > 256) z = 256;
+    // if (z < 0) z = 0;
 
     let columnHeight = 192 - (z / 256) * 192;
     //let columnHeight = 192 * (192 / z);
@@ -207,8 +207,15 @@ function DrawScreen() {
 
     // Draw column on screen, based on distance
     cs.beginPath();
-    cs.strokeStyle = columnColor;
-    cs.strokeRect(
+    //cs.strokeStyle = columnColor;
+    // cs.strokeRect(
+    //   col * (256 / SCREEN_COLS),
+    //   192 / 2 - columnHeight / 2,
+    //   256 / SCREEN_COLS,
+    //   columnHeight
+    // );
+    cs.fillStyle = columnColor;
+    cs.fillRect(
       col * (256 / SCREEN_COLS),
       192 / 2 - columnHeight / 2,
       256 / SCREEN_COLS,
