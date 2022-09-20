@@ -3,7 +3,7 @@ export default class Player {
   public Y: number; // same as X
   public Angle: number; // 0-359, later will be 0-511
 
-  public c: object;    // canvas context
+  public c: object; // canvas context
 
   // public constructor(ctx: object) {
   //   this.c = ctx;
@@ -11,6 +11,12 @@ export default class Player {
 
   public getAngle(): number {
     return this.Angle;
+  }
+
+  public setAngle(angle: number): void {
+    if (angle >= 360) angle = 0;
+    if (angle < 0) angle = 359;
+    this.Angle = angle;
   }
 
   public Draw(): string {
@@ -29,7 +35,7 @@ export default class Player {
     this.c.closePath();
 
     // start of field of view vector
-    angle = this.Angle - 30;
+    angle = this.Angle - 30; // TODO: replace by const FOV/2
     this.c.beginPath();
     this.c.strokeStyle = 'black';
     this.c.moveTo(this.X, this.Y);
