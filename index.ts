@@ -11,9 +11,12 @@ let cs = objCanvasScr.getContext('2d');
 
 let p = new Player();
 p.c = c;
-p.X = 128;
-p.Y = 128;
-p.Angle = 90;
+// p.X = 100;
+// p.Y = 20;
+// p.Angle = 60;
+p.X = 187;
+p.Y = 212;
+p.Angle = 164;
 
 const map: number[] = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -36,6 +39,8 @@ const map: number[] = [
 
 // Game loop
 window.setInterval(function () {
+  ReadInput();
+
   DrawMap();
 
   DrawScreen();
@@ -48,48 +53,65 @@ window.setInterval(function () {
 }, 33); // 30fps
 
 // Handle keyboard input
-document.getElementsByTagName('body')[0].onkeydown = function (e) {
-  var ev = e || event;
+let key = [];
 
-  // if (ev.keyCode == 70) {
-  //   //&& ev.ctrlKey) {
-  //   //do something...
-  // }
-
-  const STEP_SIZE = 1;
-  const ANGLE_STEP = 2;
-
-  let a = p.getAngle();
-  if (ev.key == 'ArrowLeft') {
-    a -= ANGLE_STEP;
-    p.setAngle(a);
-  }
-  if (ev.key == 'ArrowRight') {
-    a += ANGLE_STEP;
-    p.setAngle(a);
-  }
-
-  if (ev.key == 'ArrowUp') {
-    let newX = p.X + STEP_SIZE * Math.cos((a * Math.PI) / 180);
-    let newY = p.Y + STEP_SIZE * Math.sin((a * Math.PI) / 180);
-
-    if (PositionIsValid(newX, newY)) {
-      // cap X to 8.8 fixed point precision
-      //p.X = Math.round((p.X / 256) * 256);
-
-      p.X = newX;
-      p.Y = newY;
-    }
-  } else if (ev.key == 'ArrowDown') {
-    let newX = p.X - STEP_SIZE * Math.cos((a * Math.PI) / 180);
-    let newY = p.Y - STEP_SIZE * Math.sin((a * Math.PI) / 180);
-
-    if (PositionIsValid(newX, newY)) {
-      p.X = newX;
-      p.Y = newY;
-    }
-  }
+let objBody = document.getElementsByTagName('body')[0];
+objCanvasScr.focus();
+objBody.onmouseover = function () {
+  objCanvasScr.focus();
 };
+//objCanvasScr.onkeydown = objCanvasScr.onkeyup = function (e) {
+objBody.onkeydown = objBody.onkeyup = function (e) {
+  e = e || event;
+  key[e.code] = e.type == 'keydown';
+};
+
+const STEP_SIZE = 1;
+const ANGLE_STEP = 2;
+
+function ReadInput() {
+  let a = p.getAngle();
+  if (key['ArrowLeft'] || key['KeyA']) {
+    if (key['KeyZ']) {
+      // using Z as ALT key
+      // strafe player left
+      MovePlayer(p.getAngle() - 90);
+    } else {
+      a -= ANGLE_STEP;
+      p.setAngle(a);
+    }
+  }
+
+  if (key['ArrowRight'] || key['KeyD']) {
+    if (key['KeyZ']) {
+      // using Z as ALT key
+      // strafe player right
+      MovePlayer(p.getAngle() + 90);
+    } else {
+      a += ANGLE_STEP;
+      p.setAngle(a);
+    }
+  }
+
+  if (key['ArrowUp'] || key['KeyW']) {
+    MovePlayer(p.getAngle());
+  } else if (key['ArrowDown'] || key['KeyS']) {
+    MovePlayer(p.getAngle() - 180);
+  }
+}
+
+function MovePlayer(a) {
+  let newX = p.X + STEP_SIZE * Math.cos((a * Math.PI) / 180);
+  let newY = p.Y + STEP_SIZE * Math.sin((a * Math.PI) / 180);
+
+  if (PositionIsValid(newX, newY)) {
+    // cap X to 8.8 fixed point precision
+    //p.X = Math.round((p.X / 256) * 256);
+
+    p.X = newX;
+    p.Y = newY;
+  }
+}
 
 function PositionIsValid(x, y) {
   return (
@@ -158,8 +180,16 @@ function DrawScreen() {
     let rayX = p.X;
     let rayY = p.Y;
 
+    // step from -0.5 to +0.5 in equal increments
+    //let progress = col / SCREEN_COLS - 0.5;
+
+    //angle += progress;
+
     let stepX = RAY_STEP * Math.cos((angle * Math.PI) / 180);
     let stepY = RAY_STEP * Math.sin((angle * Math.PI) / 180);
+
+    // stepX += progress;
+    // stepY += progress;
 
     while (!wallFound && distance < MAX_DISTANCE) {
       rayX += stepX;
@@ -183,14 +213,23 @@ function DrawScreen() {
     // if (distance > 255) distance = 255;
     // if (distance < 0) distance = 0;
 
+    // this is supposed to fix the "fisheye effect"
     let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
 
     // test
     // if (z > 256) z = 256;
     // if (z < 0) z = 0;
 
-    let columnHeight = 192 - (z / 256) * 192;
+    const MIN_COLUMN_HEIGHT = 32;
+    const MAX_COLUMN_HEIGHT = 192;
+
+    let columnHeight = 192 - (z / 256) * 192; // height on 0-192 range
     //let columnHeight = 192 * (192 / z);
+
+    columnHeight =
+      MIN_COLUMN_HEIGHT +
+      (columnHeight / MAX_COLUMN_HEIGHT) *
+        (MAX_COLUMN_HEIGHT - MIN_COLUMN_HEIGHT);
 
     let columnColor =
       'rgb(' +
