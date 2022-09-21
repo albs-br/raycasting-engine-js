@@ -18,14 +18,33 @@ p.X = 187;
 p.Y = 212;
 p.Angle = 164;
 
+// const map: number[] = [
+//   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+// ];
+
 const map: number[] = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -147,12 +166,42 @@ function DrawMap() {
 }
 
 function DrawScreen() {
-  const FOV = 60; // field of view
+  const FOV = 60; // field of view in degrees
+
   const SCREEN_COLS = 256;
   //const SCREEN_COLS = 64;
 
+  const RAY_STEP = 256 / SCREEN_COLS;
+  const COLUMN_WIDTH = 256 / SCREEN_COLS;
+  const MAX_DISTANCE = 256;
+
   // set initial angle
   let angle = p.getAngle() - FOV / 2;
+
+  //TODO: this should be done once at game init, not in game loop...
+  // calc angles for current number of screen cols
+  let tempAngles = [];
+  let fovAngles = [];
+  //for (let i = SCREEN_COLS / 2; i >= 1; i--) {
+  for (let i = 1; i <= SCREEN_COLS / 2; i++) {
+    let angleInRadians = Math.atan((COLUMN_WIDTH * i) / 1);
+
+    // convert to degrees (Degrees = Radians × 180 / π)
+    let angleInDegrees = (angleInRadians * 180) / Math.PI;
+
+    // store angles, in relation to player's forward direction
+    tempAngles.push(angleInDegrees);
+  }
+  // store the angle, in relation to player's start of FOV
+  for (let i = 0; i < SCREEN_COLS; i++) {
+    fovAngles.push(tempAngles[i] - tempAngles[0]);
+  }
+  // compute the other half of angles FOV (symetrical)
+  // let j = SCREEN_COLS/2 - 1;
+  // for (let i = 0; i < SCREEN_COLS; i++) {
+  //   fovAngles.push(-fovAngles[j]);
+  //   j--;
+  // }
 
   // Clear screen and draw ceilng/floor
   cs.clearRect(0, 0, objCanvasScr.width, objCanvasScr.height);
@@ -173,8 +222,6 @@ function DrawScreen() {
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
     // cast ray from player until find a wall
-    const RAY_STEP = 256 / SCREEN_COLS;
-    const MAX_DISTANCE = 256;
     let wallFound: boolean = false;
     let distance = 0;
     let rayX = p.X;
@@ -239,25 +286,14 @@ function DrawScreen() {
       ', ' +
       (255 - distance) +
       ')';
-    // '#' +
-    //   (255 - distance).toString(16) +
-    //   (255 - distance).toString(16) +
-    //   (255 - distance).toString(16);
 
     // Draw column on screen, based on distance
     cs.beginPath();
-    //cs.strokeStyle = columnColor;
-    // cs.strokeRect(
-    //   col * (256 / SCREEN_COLS),
-    //   192 / 2 - columnHeight / 2,
-    //   256 / SCREEN_COLS,
-    //   columnHeight
-    // );
     cs.fillStyle = columnColor;
     cs.fillRect(
-      col * (256 / SCREEN_COLS),
+      col * COLUMN_WIDTH,
       192 / 2 - columnHeight / 2,
-      256 / SCREEN_COLS,
+      COLUMN_WIDTH,
       columnHeight
     );
     cs.closePath();
