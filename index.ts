@@ -175,35 +175,41 @@ function DrawScreen() {
   const COLUMN_WIDTH = 256 / SCREEN_COLS;
   const MAX_DISTANCE = 256;
 
-  // set initial angle
-  let angle = p.getAngle() - FOV / 2;
+  // -------------------------------------------
 
   //TODO: this should be done once at game init, not in game loop...
+
   // calc angles for current number of screen cols
   let tempAngles = [];
   let fovAngles = [];
+
+  // convert to radians (Radians = Degrees × π / 180)
+  let d = SCREEN_COLS / 2 / Math.tan(((FOV / 2) * Math.PI) / 180); // fixed value (distance from player to viewplane, at forward direction)
+
   //for (let i = SCREEN_COLS / 2; i >= 1; i--) {
   for (let i = 1; i <= SCREEN_COLS / 2; i++) {
-    let angleInRadians = Math.atan((COLUMN_WIDTH * i) / 1);
+    let angleInRadians = Math.atan((COLUMN_WIDTH * i) / d);
 
     // convert to degrees (Degrees = Radians × 180 / π)
     let angleInDegrees = (angleInRadians * 180) / Math.PI;
 
-    // store angles, in relation to player's forward direction
+    // store angles, in relation to player's forward direction (which is perpendicular to the view plane)
     tempAngles.push(angleInDegrees);
   }
   // store the angle, in relation to player's start of FOV
-  for (let i = 0; i < SCREEN_COLS; i++) {
+  for (let i = 0; i < SCREEN_COLS / 2; i++) {
     fovAngles.push(tempAngles[i] - tempAngles[0]);
   }
   // compute the other half of angles FOV (symetrical)
-  // let j = SCREEN_COLS/2 - 1;
-  // for (let i = 0; i < SCREEN_COLS; i++) {
-  //   fovAngles.push(-fovAngles[j]);
-  //   j--;
-  // }
+  let j = SCREEN_COLS / 2 - 1;
+  for (let i = 0; i < SCREEN_COLS; i++) {
+    fovAngles.push(-fovAngles[j]);
+    j--;
+  }
 
-  // Clear screen and draw ceilng/floor
+  // ------------------------------------------------
+
+  // Clear screen and draw ceiling/floor
   cs.clearRect(0, 0, objCanvasScr.width, objCanvasScr.height);
   cs.strokeRect(0, 0, 256, 192);
 
@@ -218,6 +224,9 @@ function DrawScreen() {
   grd.addColorStop(1, 'blue');
   cs.fillStyle = grd;
   cs.fillRect(0, 0, 256, 96);
+
+  // set initial angle
+  let angle = p.getAngle() - FOV / 2;
 
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
