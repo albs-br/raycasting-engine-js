@@ -292,6 +292,8 @@ function DrawScreen() {
   cs.fillStyle = grd;
   cs.fillRect(0, 0, 256, 96);
 
+  // ------------------------------------------------
+
   // set initial to start of FOV
   let angle = p.getAngle() - FOV / 2;
 
@@ -371,4 +373,17 @@ function DrawScreen() {
 
     angle += FOV / SCREEN_COLS;
   }
+
+  //-----------------------------------------------
+
+  // cover top and bottom of screen
+  cs.beginPath();
+  cs.fillStyle = 'white';
+  cs.fillRect(0, 0, 256, 32);
+  cs.closePath();
+
+  cs.beginPath();
+  cs.fillStyle = 'white';
+  cs.fillRect(0, 192 - 32, 256, 32);
+  cs.closePath();
 }
