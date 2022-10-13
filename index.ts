@@ -212,70 +212,72 @@ function DrawPlayerOnMap() {
 
 const FOV = 60; // field of view in degrees
 
-const SCREEN_COLS = 256;
-//const SCREEN_COLS = 64;
+//const SCREEN_COLS = 256;
+const SCREEN_COLS = 64;
+//const SCREEN_COLS = 32;
 
-const RAY_STEP = 256 / SCREEN_COLS;
+//const RAY_STEP = 256 / SCREEN_COLS;
+const RAY_STEP = 1;
 const COLUMN_WIDTH = 256 / SCREEN_COLS;
 const MAX_DISTANCE = 256;
 
+// -------------------------------------------
+
+// calc angles for current number of screen cols
+
+let tempAngles = [];
+let fovAngles = [];
+
+// convert to radians (Radians = Degrees × π / 180)
+//let d = SCREEN_COLS / 2 / Math.tan(((FOV / 2) * Math.PI) / 180); // fixed value (distance from player to viewplane, at forward direction)
+let d = 256 / 2 / Math.tan(((FOV / 2) * Math.PI) / 180); // fixed value (distance from player to viewplane, at forward direction)
+
+// debug:
+//console.log(d);
+// d = adj = 221.7
+// oposite = 128 (half of SCREEN_COLS)
+// tg(a) = oposite / adj = 128 / 221.7 = 0.57
+// tg(30) = 0.57
+
+for (let i = SCREEN_COLS / 2; i >= 1; i--) {
+  //for (let i = 1; i <= SCREEN_COLS / 2; i++) {
+  let angleInRadians = Math.atan((COLUMN_WIDTH * i) / d);
+
+  //console.log(angleInRadians);
+
+  // convert to degrees (Degrees = Radians × 180 / π)
+  let angleInDegrees = (angleInRadians * 180) / Math.PI;
+
+  // store angles, in relation to player's forward direction (which is perpendicular to the view plane)
+  tempAngles.push(angleInDegrees);
+
+  //console.log(angleInDegrees);
+}
+
+//console.log(tempAngles.length);
+
+// store the angle, in relation to player's start of FOV
+fovAngles.push(0);
+for (let i = 0; i < SCREEN_COLS / 2 - 1; i++) {
+  let t = tempAngles[i] - tempAngles[i + 1];
+  fovAngles.push(t);
+
+  //console.log(t);
+}
+
+// compute the other half of angles FOV (symetrical)
+let j = SCREEN_COLS / 2 - 1;
+for (let i = 0; i < SCREEN_COLS / 2; i++) {
+  fovAngles.push(fovAngles[j]);
+  j--;
+}
+
+//console.log(fovAngles.length);
+//console.log(fovAngles);
+
+// ------------------------------------------------
+
 function DrawScreen() {
-  // -------------------------------------------
-
-  //TODO: this should be done once at game init, not in game loop...
-
-  // calc angles for current number of screen cols
-  let tempAngles = [];
-  let fovAngles = [];
-
-  // convert to radians (Radians = Degrees × π / 180)
-  let d = SCREEN_COLS / 2 / Math.tan(((FOV / 2) * Math.PI) / 180); // fixed value (distance from player to viewplane, at forward direction)
-
-  // debug:
-  //console.log(d);
-  // d = adj = 221.7
-  // oposite = 128 (half of SCREEN_COLS)
-  // tg(a) = oposite / adj = 128 / 221.7 = 0.57
-  // tg(30) = 0.57
-
-  for (let i = SCREEN_COLS / 2; i >= 1; i--) {
-    //for (let i = 1; i <= SCREEN_COLS / 2; i++) {
-    let angleInRadians = Math.atan((COLUMN_WIDTH * i) / d);
-
-    //console.log(angleInRadians);
-
-    // convert to degrees (Degrees = Radians × 180 / π)
-    let angleInDegrees = (angleInRadians * 180) / Math.PI;
-
-    // store angles, in relation to player's forward direction (which is perpendicular to the view plane)
-    tempAngles.push(angleInDegrees);
-
-    //console.log(angleInDegrees);
-  }
-
-  //console.log(tempAngles.length);
-
-  // store the angle, in relation to player's start of FOV
-  fovAngles.push(0);
-  for (let i = 0; i < SCREEN_COLS / 2 - 1; i++) {
-    let t = tempAngles[i] - tempAngles[i + 1];
-    fovAngles.push(t);
-
-    //console.log(t);
-  }
-
-  // compute the other half of angles FOV (symetrical)
-  let j = SCREEN_COLS / 2 - 1;
-  for (let i = 0; i < SCREEN_COLS / 2; i++) {
-    fovAngles.push(fovAngles[j]);
-    j--;
-  }
-
-  //console.log(fovAngles.length);
-  //console.log(fovAngles);
-
-  // ------------------------------------------------
-
   // Clear screen and draw ceiling/floor
   cs.clearRect(0, 0, objCanvasScr.width, objCanvasScr.height);
   cs.strokeRect(0, 0, 256, 192);
@@ -299,7 +301,8 @@ function DrawScreen() {
 
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
-    //angle += fovAngles[col];
+    // // using precalculated fovAngles
+    // angle += fovAngles[col];
 
     // cast ray from player until find a wall
     let wallFound: boolean = false;
@@ -340,16 +343,18 @@ function DrawScreen() {
     // if (z > 256) z = 256;
     // if (z < 0) z = 0;
 
-    const MIN_COLUMN_HEIGHT = 32;
-    const MAX_COLUMN_HEIGHT = 192;
+    // const MIN_COLUMN_HEIGHT = 32;
+    // const MAX_COLUMN_HEIGHT = 192;
 
-    let columnHeight = 192 - (z / 256) * 192; // height on 0-192 range
-    //let columnHeight = 192 * (192 / z);
+    // let columnHeight = 192 - (z / 256) * 192; // height on 0-192 range
+    // //let columnHeight = 192 * (192 / z);
 
-    columnHeight =
-      MIN_COLUMN_HEIGHT +
-      (columnHeight / MAX_COLUMN_HEIGHT) *
-        (MAX_COLUMN_HEIGHT - MIN_COLUMN_HEIGHT);
+    // columnHeight =
+    //   MIN_COLUMN_HEIGHT +
+    //   (columnHeight / MAX_COLUMN_HEIGHT) *
+    //     (MAX_COLUMN_HEIGHT - MIN_COLUMN_HEIGHT);
+
+    let columnHeight = 1 / (0.0001 * z);
 
     let columnColor =
       'rgb(' +
@@ -371,6 +376,7 @@ function DrawScreen() {
     );
     cs.closePath();
 
+    // using fixed angles
     angle += FOV / SCREEN_COLS;
   }
 
