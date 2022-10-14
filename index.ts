@@ -3,6 +3,22 @@ import './style.css';
 
 import Player from './player.ts';
 
+const FOV = 60; // field of view in degrees
+
+//const SCREEN_COLS = 256;
+//const SCREEN_COLS = 64;
+const SCREEN_COLS = 32;
+
+const FPS = 30;
+const TIME_PER_FRAME = 1000 / FPS; // time per frame in ms
+
+const RAY_STEP = 1;
+const COLUMN_WIDTH = 256 / SCREEN_COLS;
+const MAX_DISTANCE = 256;
+
+const STEP_SIZE = 1 * 2;
+const ANGLE_STEP = 2 * 2;
+
 let objCanvasMap = document.getElementById('canvasMap');
 let c = objCanvasMap.getContext('2d');
 
@@ -63,12 +79,22 @@ const gameLoop = function () {
   DrawScreen();
 
   //let s = `{p.X}, {p.Y}, {p.Angle}`;
-  let s2 = 'x: ' + p.X + ', y: ' + p.Y + ', a: ' + p.Angle;
+  let s2 =
+    'SCR_COLS: ' +
+    SCREEN_COLS +
+    ', FPS: ' +
+    FPS +
+    ', a: ' +
+    p.Angle +
+    ', x: ' +
+    p.X +
+    ', y: ' +
+    p.Y;
   document.getElementById('debuginfo').innerHTML = s2;
 };
 
 // Game loop
-window.setInterval(gameLoop, 33); // 30fps
+window.setInterval(gameLoop, TIME_PER_FRAME);
 //window.setTimeout(gameLoop, 100); // debug
 
 // Handle keyboard input
@@ -84,9 +110,6 @@ objBody.onkeydown = objBody.onkeyup = function (e) {
   e = e || event;
   key[e.code] = e.type == 'keydown';
 };
-
-const STEP_SIZE = 1;
-const ANGLE_STEP = 2;
 
 function ReadInput() {
   let a = p.getAngle();
@@ -210,17 +233,6 @@ function DrawPlayerOnMap() {
   c.strokeRect(p.X, p.Y, 1, 1);
 }
 
-const FOV = 60; // field of view in degrees
-
-//const SCREEN_COLS = 256;
-const SCREEN_COLS = 64;
-//const SCREEN_COLS = 32;
-
-//const RAY_STEP = 256 / SCREEN_COLS;
-const RAY_STEP = 1;
-const COLUMN_WIDTH = 256 / SCREEN_COLS;
-const MAX_DISTANCE = 256;
-
 // -------------------------------------------
 
 // calc angles for current number of screen cols
@@ -296,7 +308,7 @@ function DrawScreen() {
 
   // ------------------------------------------------
 
-  // set initial to start of FOV
+  // set initial angle to start of FOV
   let angle = p.getAngle() - FOV / 2;
 
   // for each screen column
