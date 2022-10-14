@@ -9,15 +9,15 @@ const FOV = 60; // field of view in degrees
 //const SCREEN_COLS = 64;
 const SCREEN_COLS = 32;
 
-const FPS = 30;
+const FPS = 20; // suggested values: 10, 20, 30, 60
 const TIME_PER_FRAME = 1000 / FPS; // time per frame in ms
 
 const RAY_STEP = 1;
 const COLUMN_WIDTH = 256 / SCREEN_COLS;
 const MAX_DISTANCE = 256;
 
-const STEP_SIZE = 1 * 2;
-const ANGLE_STEP = 2 * 2;
+const STEP_SIZE = 1 * (60 / FPS);
+const ANGLE_STEP = 2 * (60 / FPS);
 
 let objCanvasMap = document.getElementById('canvasMap');
 let c = objCanvasMap.getContext('2d');
@@ -236,6 +236,7 @@ function DrawPlayerOnMap() {
 // -------------------------------------------
 
 // calc angles for current number of screen cols
+// these pre calc angles may or may not be used (it doesn't semm to make a big difference)
 
 let tempAngles = [];
 let fovAngles = [];
