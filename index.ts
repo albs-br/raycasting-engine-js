@@ -415,13 +415,15 @@ function DrawScreen() {
 
     let columnHeight = 1 / (0.0001 * z);
 
+    let factor = 256 / 8; // only 6 shades of gray + white and black
+
     let columnColor =
       'rgb(' +
-      Math.round((255 - distance) / 6) * 6 +
+      Math.round((255 - distance) / factor) * factor +
       ', ' +
-      Math.round((255 - distance) / 6) * 6 +
+      Math.round((255 - distance) / factor) * factor +
       ', ' +
-      Math.round((255 - distance) / 6) * 6 +
+      Math.round((255 - distance) / factor) * factor +
       ')';
 
     // Draw column on screen, based on distance
