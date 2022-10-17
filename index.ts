@@ -150,6 +150,10 @@ function MovePlayer(a) {
     // cap X to 8.8 fixed point precision
     //p.X = Math.round((p.X / 256) * 256);
 
+    // cap to int (0-255)
+    newX = Math.round(newX);
+    newY = Math.round(newY);
+
     p.X = newX;
     p.Y = newY;
   }
