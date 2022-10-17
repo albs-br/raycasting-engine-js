@@ -84,6 +84,10 @@ const gameLoop = function () {
     SCREEN_COLS +
     ', FPS: ' +
     FPS +
+    ', STEP_SIZE: ' +
+    STEP_SIZE +
+    ', ANGLE_STEP: ' +
+    ANGLE_STEP +
     ', a: ' +
     p.Angle +
     ', x: ' +
