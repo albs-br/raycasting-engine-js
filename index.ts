@@ -35,9 +35,9 @@ let p = new Player();
 // p.X = 100;
 // p.Y = 40;
 // p.setAngle(90);
-p.X = 18;
-p.Y = 230;
-p.setAngle(0);
+p.X = 138;
+p.Y = 139;
+p.setAngle(245);
 
 // const map: number[] = [
 //   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -80,7 +80,7 @@ p.setAngle(0);
 const map: number[] = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 1, 0, 1, 0, 1],
   [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
   [1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -124,7 +124,7 @@ const gameLoop = function () {
 
 // Game loop
 window.setInterval(gameLoop, TIME_PER_FRAME);
-//window.setTimeout(gameLoop, 100); // debug
+//window.setTimeout(gameLoop, 1000); // debug
 
 // Handle keyboard input
 let key = [];
@@ -356,6 +356,9 @@ function DrawScreen() {
   // set initial angle to start of FOV
   let angle = p.getAngle() - FOV / 2;
 
+  let objectFound: boolean = false;
+  let arrayObjectsFound = [];
+
   // for each screen column
   for (let col = 0; col < SCREEN_COLS; col++) {
     // // using precalculated fovAngles
@@ -381,9 +384,24 @@ function DrawScreen() {
         wallFound = true;
         distance = MAX_DISTANCE;
       } else {
-        // check if map cell is a wall
-        if (map[Math.floor(rayY / 16)][Math.floor(rayX / 16)] != 0) {
+        // check if map cell is a wall/object
+        let mapCell = map[Math.floor(rayY / 16)][Math.floor(rayX / 16)];
+        if (mapCell == 1) {
           wallFound = true;
+        } else if (mapCell == 2 && !objectFound) {
+          objectFound = true;
+
+          let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
+          z = z * 1.5; // adjust to make walls look smaller
+          let columnHeight = 1 / (0.0001 * z);
+
+          let newObject = {
+            X: col * COLUMN_WIDTH,
+            Y: 192 / 2,
+            Width: columnHeight / 2 / 2,
+            Height: columnHeight / 2,
+          };
+          arrayObjectsFound.push(newObject);
         }
       }
     }
@@ -392,7 +410,7 @@ function DrawScreen() {
     // if (distance > 255) distance = 255;
     // if (distance < 0) distance = 0;
 
-    // this is supposed to fix the "fisheye effect"
+    // fix the "fisheye effect"
     let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
     //let z = distance;
 
@@ -429,12 +447,16 @@ function DrawScreen() {
     // Draw column on screen, based on distance
     cs.beginPath();
     cs.fillStyle = columnColor;
+    //if (!halfHeightWall) {
     cs.fillRect(
       col * COLUMN_WIDTH,
       192 / 2 - columnHeight / 2,
       COLUMN_WIDTH,
       columnHeight
     );
+    // } else {
+    //   cs.fillRect(col * COLUMN_WIDTH, 192 / 2, COLUMN_WIDTH, columnHeight / 2);
+    // }
     cs.closePath();
 
     // using fixed angles
@@ -443,14 +465,32 @@ function DrawScreen() {
 
   //-----------------------------------------------
 
-  // cover top and bottom of screen
-  cs.beginPath();
-  cs.fillStyle = 'white';
-  cs.fillRect(0, 0, 256, 32);
-  cs.closePath();
+  // // cover top and bottom of screen
+  // cs.beginPath();
+  // cs.fillStyle = 'white';
+  // cs.fillRect(0, 0, 256, 32);
+  // cs.closePath();
 
-  cs.beginPath();
-  cs.fillStyle = 'white';
-  cs.fillRect(0, 192 - 32, 256, 32);
-  cs.closePath();
+  // cs.beginPath();
+  // cs.fillStyle = 'white';
+  // cs.fillRect(0, 192 - 32, 256, 32);
+  // cs.closePath();
+
+  //-----------------------------------------------
+
+  // draw objects
+  for (let i = 0; i < arrayObjectsFound.length; i++) {
+    cs.beginPath();
+    cs.strokeStyle = 'blue';
+    cs.strokeRect(
+      arrayObjectsFound[i].X,
+      arrayObjectsFound[i].Y,
+      arrayObjectsFound[i].Width,
+      arrayObjectsFound[i].Height
+    );
+    // } else {
+    //   cs.fillRect(col * COLUMN_WIDTH, 192 / 2, COLUMN_WIDTH, columnHeight / 2);
+    // }
+    cs.closePath();
+  }
 }
