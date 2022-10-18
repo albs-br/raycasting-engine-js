@@ -3,7 +3,7 @@ import './style.css';
 
 import Player from './player.ts';
 
-const FOV = 60; // field of view in degrees
+const FOV = 64; // field of view in degrees
 
 //const SCREEN_COLS = 256;
 //const SCREEN_COLS = 64;
@@ -25,6 +25,7 @@ let c = objCanvasMap.getContext('2d');
 let objCanvasScr = document.getElementById('canvasScr');
 let cs = objCanvasScr.getContext('2d');
 
+//
 let p = new Player();
 // p.X = 100;
 // p.Y = 20;
@@ -81,7 +82,7 @@ const map: number[] = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 1, 0, 1, 0, 1],
-  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
   [1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
@@ -222,6 +223,9 @@ function DrawMap() {
         c.strokeStyle = 'red';
         c.strokeRect(x * 16, y * 16, 16, 16);
         c.fillStyle = 'pink';
+        c.fillRect(x * 16, y * 16, 16, 16);
+      } else if (map[y][x] == 2) {
+        c.fillStyle = 'lightblue';
         c.fillRect(x * 16, y * 16, 16, 16);
       } else {
         c.strokeStyle = 'lightgray';
@@ -391,6 +395,7 @@ function DrawScreen() {
         } else if (mapCell == 2 && !objectFound) {
           objectFound = true;
 
+          // TODO: fix code repetition
           let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
           z = z * 1.5; // adjust to make walls look smaller
           let columnHeight = 1 / (0.0001 * z);
@@ -433,15 +438,15 @@ function DrawScreen() {
 
     let columnHeight = 1 / (0.0001 * z);
 
-    let factor = 256 / 8; // only 6 shades of gray + white and black
+    let colorFactor = 256 / 8; // only 6 shades of gray + white and black
 
     let columnColor =
       'rgb(' +
-      Math.round((255 - distance) / factor) * factor +
+      Math.round((255 - distance) / colorFactor) * colorFactor +
       ', ' +
-      Math.round((255 - distance) / factor) * factor +
+      Math.round((255 - distance) / colorFactor) * colorFactor +
       ', ' +
-      Math.round((255 - distance) / factor) * factor +
+      Math.round((255 - distance) / colorFactor) * colorFactor +
       ')';
 
     // Draw column on screen, based on distance
