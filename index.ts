@@ -26,7 +26,7 @@ let objCanvasScr = document.getElementById('canvasScr');
 let cs = objCanvasScr.getContext('2d');
 
 //
-let p = new Player();
+//let p = new Player();
 // p.X = 100;
 // p.Y = 20;
 // p.setAngle(60);
@@ -36,9 +36,7 @@ let p = new Player();
 // p.X = 100;
 // p.Y = 40;
 // p.setAngle(90);
-p.X = 138;
-p.Y = 139;
-p.setAngle(245);
+let p = new Player(147, 124, 240, ANGLE_STEP);
 
 // const map: number[] = [
 //   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
