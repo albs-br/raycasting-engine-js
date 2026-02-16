@@ -12,11 +12,20 @@ const SCREEN_COLS = 32;
 const FPS = 20; // suggested values: 10, 20, 30, 60
 const TIME_PER_FRAME = 1000 / FPS; // time per frame in ms
 
+const MAP_WIDTH_IN_TILES = 16;
+const MAP_HEIGHT_IN_TILES = 16;
+const TILE_WIDTH_IN_UNITS = 16;
+const TILE_HEIGHT_IN_UNITS = 16;
+const MAP_WIDTH_IN_UNITS = MAP_WIDTH_IN_TILES * TILE_WIDTH_IN_UNITS;
+const MAP_HEIGHT_IN_UNITS = MAP_HEIGHT_IN_TILES * TILE_HEIGHT_IN_UNITS;
+
+const DISTANCE_PLAYER_TO_SCREEN = 192; // in screen units (pixels)
+
 const RAY_STEP = 1;
 const COLUMN_WIDTH = 256 / SCREEN_COLS;
 const MAX_DISTANCE = 256;
 
-const STEP_SIZE = 1 * (60 / FPS);
+const STEP_SIZE = 0.75 * (60 / FPS);
 const ANGLE_STEP = 2 * (60 / FPS);
 
 let objCanvasMap = document.getElementById('canvasMap');
@@ -212,7 +221,7 @@ function PositionIsValid(x, y) {
 function DrawMap() {
   // Draw map
   c.clearRect(0, 0, objCanvasMap.width, objCanvasMap.height);
-  c.strokeRect(0, 0, 256, 256);
+  c.strokeRect(0, 0, MAP_WIDTH_IN_UNITS, MAP_HEIGHT_IN_UNITS);
 
   for (let y = 0; y < 16; y++) {
     for (let x = 0; x < 16; x++) {
@@ -391,20 +400,20 @@ function DrawScreen() {
         if (mapCell == 1) {
           wallFound = true;
         } else if (mapCell == 2 && !objectFound) {
-          objectFound = true;
+          // objectFound = true;
 
-          // TODO: fix code repetition
-          let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
-          z = z * 1.5; // adjust to make walls look smaller
-          let columnHeight = 1 / (0.0001 * z);
+          // // TODO: fix code repetition
+          // let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
+          // z = z * 1.5; // adjust to make walls look smaller
+          // let columnHeight = 1 / (0.0001 * z);
 
-          let newObject = {
-            X: col * COLUMN_WIDTH,
-            Y: 192 / 2,
-            Width: columnHeight / 2 / 2,
-            Height: columnHeight / 2,
-          };
-          arrayObjectsFound.push(newObject);
+          // let newObject = {
+          //   X: col * COLUMN_WIDTH,
+          //   Y: 192 / 2,
+          //   Width: columnHeight / 2 / 2,
+          //   Height: columnHeight / 2,
+          // };
+          // arrayObjectsFound.push(newObject);
         }
       }
     }
@@ -413,15 +422,19 @@ function DrawScreen() {
     // if (distance > 255) distance = 255;
     // if (distance < 0) distance = 0;
 
-    // fix the "fisheye effect"
-    let z = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
-    //let z = distance;
 
-    z = z * 1.5; // adjust to make walls look smaller
+    // fix the "fisheye effect"
+    distance = distance * Math.cos(((p.Angle - angle) * Math.PI) / 180);
+
+    // project wall into screen
+    let columnHeight = (TILE_WIDTH_IN_UNITS * DISTANCE_PLAYER_TO_SCREEN) / distance;
+    //let columnHeight = distance;
+
+    //z = z * 1.5; // adjust to make walls look smaller
 
     // test
-    // if (z > 256) z = 256;
-    // if (z < 0) z = 0;
+    //if (z > 256) console.log(z);
+    //if (z < 0) console.log(z);
 
     // const MIN_COLUMN_HEIGHT = 32;
     // const MAX_COLUMN_HEIGHT = 192;
@@ -434,7 +447,16 @@ function DrawScreen() {
     //   (columnHeight / MAX_COLUMN_HEIGHT) *
     //     (MAX_COLUMN_HEIGHT - MIN_COLUMN_HEIGHT);
 
-    let columnHeight = 1 / (0.0001 * z);
+                                
+    /* 
+    --- project wall into screen
+    distances[i] = (TILE_SIZE * DISTANCE_PLAYER_TO_SCREEN) / distances[i];
+    */
+
+    //let columnHeight = 1 / (0.0001 * z);
+
+
+    //console.log(columnHeight);
 
     let colorFactor = 256 / 8; // only 6 shades of gray + white and black
 
